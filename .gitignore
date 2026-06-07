@@ -1,0 +1,72 @@
+# ─── .NET ────────────────────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.rsuser
+.idea/
+
+# NuGet
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+packages/
+
+# EF Core migrations snapshot (keep migrations, ignore designer files)
+*.Designer.cs
+
+# Publish output
+publish/
+**/publish/
+
+# ASP.NET Core
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# ─── React / Node ────────────────────────────────────────────────────────────
+node_modules/
+dist/
+build/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Vite
+*.local
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+# Keep docker-compose files but ignore overrides with secrets
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ─── Environment & Secrets ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+secrets/
+
+# ─── Dev Container ───────────────────────────────────────────────────────────
+# Keep .devcontainer/ tracked — intentionally not ignored
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Test results ────────────────────────────────────────────────────────────
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+lcov.info
