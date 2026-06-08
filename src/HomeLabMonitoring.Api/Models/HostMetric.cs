@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HomeLabMonitoring.Api.Models;
 
-public class HostMetrics{
+public class HostMetric{
     public int Id { get; set; }
     [Required]
     public string HostName { get; set; }
