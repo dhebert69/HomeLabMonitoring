@@ -11,8 +11,8 @@ public class PrometheusParser{
                 var parts = line.Split(' ');
                 string name = string.Empty;
                 Dictionary<string, string> labels = new Dictionary<string, string>();
-                double value = double.Parse(parts[1]);
-                if(parts[0].Contains("{")){
+                if (!double.TryParse(parts[1], out double value)) continue;
+                if (parts[0].Contains("{")){
                     var nameAndLabels = parts[0].Split('{');
                     name = nameAndLabels[0];
 

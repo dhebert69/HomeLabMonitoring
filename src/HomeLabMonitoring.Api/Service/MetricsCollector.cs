@@ -7,20 +7,22 @@ namespace HomeLabMonitoring.Api.Services;
 public class MetricsCollector : BackgroundService
 {
     private readonly HttpClient _httpClient;
-    private readonly AppDbContext _db;
     private List<PrometheusMetric> _previousCpuMetrics = new();
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public MetricsCollector(HttpClient httpClient, AppDbContext db)
+    public MetricsCollector(HttpClient httpClient, IServiceScopeFactory scopeFactory)
     {
         _httpClient = httpClient;
-        _db = db;
+        _scopeFactory = scopeFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            // do your work here
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
             string rawText = await _httpClient.GetStringAsync("http://192.168.2.233:9101/metrics", stoppingToken);
             PrometheusParser parser  = new PrometheusParser();
             parser.Parse(rawText);
@@ -30,7 +32,24 @@ public class MetricsCollector : BackgroundService
             (long network_download, long network_upload) = GetNetworkMetrics(parser);
             long uptime = GetUptime(parser);
             (double load1m, double load5m, double load15m) = GetLoadAverages(parser);
- 
+
+            HostMetric hostMetric = new HostMetric
+            {
+                HostName = "nas",
+                CPU = cpu_percentage,
+                MemoryUsed = memory_used,
+                MemoryTotal = memory_total,
+                NetworkDownload = network_download,
+                NetworkUpload = network_upload,
+                Uptime = uptime,
+                LoadAverage1m = load1m,
+                LoadAverage5m = load5m,
+                LoadAverage15m = load15m,
+                CollectedAt = DateTime.UtcNow
+            };
+
+            db.HostMetrics.Add(hostMetric);
+            await db.SaveChangesAsync(stoppingToken);
 
             await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
@@ -70,8 +89,8 @@ public class MetricsCollector : BackgroundService
 
     private (long download, long upload) GetNetworkMetrics(PrometheusParser parser)
     {
-        PrometheusMetric? network_download = parser.GetMetric(NodeExporterMetrics.NetworkDownload, new Dictionary<string, string> { { "device", "eth0" } });
-        PrometheusMetric? network_upload = parser.GetMetric(NodeExporterMetrics.NetworkUpload, new Dictionary<string, string> { { "device", "eth0" } });
+        PrometheusMetric? network_download = parser.GetMetric(NodeExporterMetrics.NetworkDownload, new Dictionary<string, string> { { "device", "enp5s0" } });
+        PrometheusMetric? network_upload = parser.GetMetric(NodeExporterMetrics.NetworkUpload, new Dictionary<string, string> { { "device", "enp5s0" } });
         if (network_download != null && network_upload != null)
         {
             return ((long)network_download.Value, (long)network_upload.Value);

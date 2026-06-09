@@ -7,7 +7,7 @@ public class PrometheusMetric{
 
     public PrometheusMetric(string name, Dictionary<string, string>? labels, double value){
         Name = name;
-        Labels = labels ?? new Dictionary<string, string>()
+        Labels = labels ?? new Dictionary<string, string>();
         Value = value;
     }
 }
