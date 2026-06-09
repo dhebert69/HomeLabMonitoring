@@ -88,7 +88,13 @@ namespace HomeLabMonitoring.Api.Migrations
                     b.Property<long>("NetworkDownload")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("NetworkDownloadSpeed")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("NetworkUpload")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("NetworkUploadSpeed")
                         .HasColumnType("bigint");
 
                     b.Property<long>("Uptime")
