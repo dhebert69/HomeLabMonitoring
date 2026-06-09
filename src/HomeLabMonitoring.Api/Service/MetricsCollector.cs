@@ -1,4 +1,5 @@
 using HomeLabMonitoring.Api.Data;
+using HomeLabMonitoring.Api.Models;
 using Microsoft.Extensions.Hosting;
 
 namespace HomeLabMonitoring.Api.Services;
@@ -28,8 +29,10 @@ public class MetricsCollector : BackgroundService
             (long memory_used, long memory_total) = GetMemoryUsed(parser);
             (long network_download, long network_upload) = GetNetworkMetrics(parser);
             long uptime = GetUptime(parser);
+            (double load1m, double load5m, double load15m) = GetLoadAverages(parser);
+ 
 
-                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
     }
 
@@ -84,5 +87,19 @@ public class MetricsCollector : BackgroundService
             return DateTimeOffset.UtcNow.ToUnixTimeSeconds() - (long)uptime.Value;
         }
         return 0;
+    }
+
+    private (double load1m, double load5m, double load15m) GetLoadAverages(PrometheusParser parser)
+    {
+        PrometheusMetric? load1m = parser.GetMetric(NodeExporterMetrics.LoadAverage1m, null);
+        PrometheusMetric? load5m = parser.GetMetric(NodeExporterMetrics.LoadAverage5m, null);
+        PrometheusMetric? load15m = parser.GetMetric(NodeExporterMetrics.LoadAverage15m, null);
+
+        if(load1m != null && load5m != null && load15m != null)
+        {
+            return (load1m.Value, load5m.Value, load15m.Value);
+        }
+
+        return (0, 0, 0);
     }
 }
