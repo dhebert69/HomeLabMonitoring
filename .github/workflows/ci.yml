@@ -63,15 +63,12 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.NAS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
       - name: Deploy to NAS
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ${{ secrets.NAS_USER }}@${{ secrets.NAS_TAILSCALE_IP }} "cd ~/projects/monitoringApp/homelabapi && docker compose pull && docker compose up -d"
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.NAS_TAILSCALE_IP }}
-          username: ${{ secrets.NAS_USER }}
-          key: ${{ secrets.NAS_SSH_KEY }}
-          script: |
-            cd ~/projects/monitoringApp/homelabapi
-            docker compose pull
-            docker compose up -d
