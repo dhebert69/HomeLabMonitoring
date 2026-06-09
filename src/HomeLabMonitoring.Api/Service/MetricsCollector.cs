@@ -27,6 +27,7 @@ public class MetricsCollector : BackgroundService
             double cpu_percentage = CalculateCpuPercentage(parser);
             (long memory_used, long memory_total) = GetMemoryUsed(parser);
             (long network_download, long network_upload) = GetNetworkMetrics(parser);
+            long uptime = GetUptime(parser);
 
                 await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
@@ -73,5 +74,15 @@ public class MetricsCollector : BackgroundService
             return ((long)network_download.Value, (long)network_upload.Value);
         }
         return (0, 0);
+    }
+
+    private long GetUptime(PrometheusParser parser)
+    {
+        PrometheusMetric? uptime = parser.GetMetric(NodeExporterMetrics.Uptime, null);
+        if(uptime != null)
+        {
+            return DateTimeOffset.UtcNow.ToUnixTimeSeconds() - (long)uptime.Value;
+        }
+        return 0;
     }
 }
