@@ -58,10 +58,15 @@ jobs:
     needs: docker
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
       - name: Deploy to NAS
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.NAS_HOST }}
+          host: ${{ secrets.NAS_TAILSCALE_IP }}
           username: ${{ secrets.NAS_USER }}
           key: ${{ secrets.NAS_SSH_KEY }}
           script: |
