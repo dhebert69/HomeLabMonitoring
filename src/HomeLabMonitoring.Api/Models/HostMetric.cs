@@ -10,7 +10,9 @@ public class HostMetric{
     public long MemoryUsed { get; set; }
     public long MemoryTotal { get; set; }
     public long NetworkDownload { get; set; }
-    public long NetworkUpload { get; set; }    
+    public long NetworkUpload { get; set; }
+    public long NetworkDownloadSpeed { get; set; }
+    public long NetworkUploadSpeed { get; set; }
     //uptime in seconds
     public long Uptime { get; set; }
 

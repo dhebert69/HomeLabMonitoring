@@ -8,6 +8,8 @@ public class MetricsCollector : BackgroundService
 {
     private readonly HttpClient _httpClient;
     private List<PrometheusMetric> _previousCpuMetrics = new();
+    private long _previousNetworkDownload;
+    private long _previousNetworkUpload;
     private readonly IServiceScopeFactory _scopeFactory;
 
     public MetricsCollector(HttpClient httpClient, IServiceScopeFactory scopeFactory)
@@ -29,7 +31,7 @@ public class MetricsCollector : BackgroundService
 
             double cpu_percentage = CalculateCpuPercentage(parser);
             (long memory_used, long memory_total) = GetMemoryUsed(parser);
-            (long network_download, long network_upload) = GetNetworkMetrics(parser);
+            (long network_download, long network_upload, long downloadSpeed, long uploadSpeed) = GetNetworkMetrics(parser);
             long uptime = GetUptime(parser);
             (double load1m, double load5m, double load15m) = GetLoadAverages(parser);
 
@@ -41,6 +43,8 @@ public class MetricsCollector : BackgroundService
                 MemoryTotal = memory_total,
                 NetworkDownload = network_download,
                 NetworkUpload = network_upload,
+                NetworkDownloadSpeed = downloadSpeed,
+                NetworkUploadSpeed = uploadSpeed,
                 Uptime = uptime,
                 LoadAverage1m = load1m,
                 LoadAverage5m = load5m,
@@ -87,15 +91,27 @@ public class MetricsCollector : BackgroundService
         return (0, 0);
     }
 
-    private (long download, long upload) GetNetworkMetrics(PrometheusParser parser)
+    private (long download, long upload, long downloadSpeed, long uploadSpeed) GetNetworkMetrics(PrometheusParser parser)
     {
         PrometheusMetric? network_download = parser.GetMetric(NodeExporterMetrics.NetworkDownload, new Dictionary<string, string> { { "device", "enp5s0" } });
         PrometheusMetric? network_upload = parser.GetMetric(NodeExporterMetrics.NetworkUpload, new Dictionary<string, string> { { "device", "enp5s0" } });
         if (network_download != null && network_upload != null)
         {
-            return ((long)network_download.Value, (long)network_upload.Value);
+            long downloadSpeed, uploadSpeed;
+            if (_previousNetworkDownload == 0 || _previousNetworkUpload == 0)
+            {
+                _previousNetworkDownload = (long)network_download.Value;
+                _previousNetworkUpload = (long)network_upload.Value;
+                return ((long)network_download.Value, (long)network_upload.Value, 0, 0);
+            }
+            downloadSpeed = ((long)network_download.Value - _previousNetworkDownload) / 60;
+            uploadSpeed = ((long)network_upload.Value - _previousNetworkUpload) / 60;
+            _previousNetworkDownload = (long)network_download.Value;
+            _previousNetworkUpload = (long)network_upload.Value;
+
+            return ((long)network_download.Value, (long)network_upload.Value, downloadSpeed, uploadSpeed);
         }
-        return (0, 0);
+        return (0, 0, 0, 0);
     }
 
     private long GetUptime(PrometheusParser parser)
