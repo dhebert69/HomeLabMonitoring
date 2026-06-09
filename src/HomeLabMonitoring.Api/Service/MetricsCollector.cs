@@ -26,8 +26,7 @@ public class MetricsCollector : BackgroundService
 
             double cpu_percentage = CalculateCpuPercentage(parser);
             (long memory_used, long memory_total) = GetMemoryUsed(parser);
-
-            //
+            (long network_download, long network_upload) = GetNetworkMetrics(parser);
 
                 await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
@@ -61,6 +60,17 @@ public class MetricsCollector : BackgroundService
             long used = (long)(total_mem.Value - mem_available.Value);
             long total = (long)total_mem.Value;
             return (used, total);
+        }
+        return (0, 0);
+    }
+
+    private (long download, long upload) GetNetworkMetrics(PrometheusParser parser)
+    {
+        PrometheusMetric? network_download = parser.GetMetric(NodeExporterMetrics.NetworkDownload, new Dictionary<string, string> { { "device", "eth0" } });
+        PrometheusMetric? network_upload = parser.GetMetric(NodeExporterMetrics.NetworkUpload, new Dictionary<string, string> { { "device", "eth0" } });
+        if (network_download != null && network_upload != null)
+        {
+            return ((long)network_download.Value, (long)network_upload.Value);
         }
         return (0, 0);
     }
