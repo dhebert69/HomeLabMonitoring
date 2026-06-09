@@ -20,40 +20,51 @@ public class MetricsCollector : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            string rawText = await _httpClient.GetStringAsync("http://192.168.2.233:9101/metrics", stoppingToken);
-            PrometheusParser parser  = new PrometheusParser();
-            parser.Parse(rawText);
-
-            double cpu_percentage = CalculateCpuPercentage(parser);
-            (long memory_used, long memory_total) = GetMemoryUsed(parser);
-            (long network_download, long network_upload, long downloadSpeed, long uploadSpeed) = GetNetworkMetrics(parser);
-            long uptime = GetUptime(parser);
-            (double load1m, double load5m, double load15m) = GetLoadAverages(parser);
-
-            HostMetric hostMetric = new HostMetric
+            try
             {
-                HostName = "nas",
-                CPU = cpu_percentage,
-                MemoryUsed = memory_used,
-                MemoryTotal = memory_total,
-                NetworkDownload = network_download,
-                NetworkUpload = network_upload,
-                NetworkDownloadSpeed = downloadSpeed,
-                NetworkUploadSpeed = uploadSpeed,
-                Uptime = uptime,
-                LoadAverage1m = load1m,
-                LoadAverage5m = load5m,
-                LoadAverage15m = load15m,
-                CollectedAt = DateTime.UtcNow
-            };
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            db.HostMetrics.Add(hostMetric);
-            await db.SaveChangesAsync(stoppingToken);
+                string rawText = await _httpClient.GetStringAsync("http://192.168.2.233:9101/metrics", stoppingToken);
+                PrometheusParser parser = new PrometheusParser();
+                parser.Parse(rawText);
+
+                double cpu_percentage = CalculateCpuPercentage(parser);
+                (long memory_used, long memory_total) = GetMemoryUsed(parser);
+                (long network_download, long network_upload, long downloadSpeed, long uploadSpeed) = GetNetworkMetrics(parser);
+                long uptime = GetUptime(parser);
+                (double load1m, double load5m, double load15m) = GetLoadAverages(parser);
+
+                HostMetric hostMetric = new HostMetric
+                {
+                    HostName = "nas",
+                    CPU = cpu_percentage,
+                    MemoryUsed = memory_used,
+                    MemoryTotal = memory_total,
+                    NetworkDownload = network_download,
+                    NetworkUpload = network_upload,
+                    NetworkDownloadSpeed = downloadSpeed,
+                    NetworkUploadSpeed = uploadSpeed,
+                    Uptime = uptime,
+                    LoadAverage1m = load1m,
+                    LoadAverage5m = load5m,
+                    LoadAverage15m = load15m,
+                    CollectedAt = DateTime.UtcNow
+                };
+
+                db.HostMetrics.Add(hostMetric);
+                await db.SaveChangesAsync(stoppingToken);
+
+                List<DiskMetric> diskMetrics = GetDiskMetrics(parser);
+                db.DiskMetrics.AddRange(diskMetrics);
+                await db.SaveChangesAsync(stoppingToken);
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error collecting metrics: {ex.Message}");
+            }
 
             await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
@@ -136,5 +147,24 @@ public class MetricsCollector : BackgroundService
         }
 
         return (0, 0, 0);
+    }
+
+    private List<DiskMetric> GetDiskMetrics(PrometheusParser parser)
+    {
+        List<PrometheusMetric> disksFreeSpace = parser.GetMetrics(NodeExporterMetrics.FilesystemAvail);
+        List<PrometheusMetric> diskSize = parser.GetMetrics(NodeExporterMetrics.FilesystemSize);
+
+        return diskSize.Where(disk => !disk.Labels["mountpoint"].StartsWith("/run")
+                    && disk.Labels["fstype"] != "tmpfs").Select(disk => {
+            var freeSpace = disksFreeSpace.FirstOrDefault(d => d.Labels["mountpoint"] == disk.Labels["mountpoint"]);
+            return new DiskMetric
+            {
+                MountPoint = disk.Labels["mountpoint"],
+                Hostname = "nas",
+                DiskTotal = (long)disk.Value,
+                DiskAvailable = (long)(freeSpace?.Value ?? 0),
+                CollectedAt = DateTime.UtcNow
+            };
+        }).ToList();
     }
 }

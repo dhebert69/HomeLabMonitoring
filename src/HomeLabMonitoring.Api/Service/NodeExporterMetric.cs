@@ -9,4 +9,6 @@ public static class NodeExporterMetrics
     public const string LoadAverage1m = "node_load1";
     public const string LoadAverage5m = "node_load5";
     public const string LoadAverage15m = "node_load15";
+    public const string FilesystemSize = "node_filesystem_size_bytes";
+    public const string FilesystemAvail = "node_filesystem_avail_bytes";
 }

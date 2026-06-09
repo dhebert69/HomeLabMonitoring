@@ -25,7 +25,7 @@ public class MetricsController : ControllerBase{
     }
 
     [HttpGet("hosts/history")]
-    public async Task<IActionResult> GetHistory([FromQuery] int minutes = 5)
+    public async Task<IActionResult> GetHostHistory([FromQuery] int minutes = 5)
     {
         if (minutes <= 0 || minutes > 525600)
             return BadRequest("minutes must be between 1 and 525600 (1 year)");
@@ -33,6 +33,33 @@ public class MetricsController : ControllerBase{
         var from = DateTime.UtcNow.AddMinutes(-minutes);
 
         var metrics = await _db.HostMetrics
+            .Where(m => m.CollectedAt >= from)
+            .OrderByDescending(m => m.CollectedAt)
+            .ToListAsync();
+
+        return Ok(metrics);
+    }
+
+    [HttpGet("disk")]
+    public async Task<IActionResult> GetDisk()
+    {
+        var latest = await _db.DiskMetrics
+        .OrderByDescending(m => m.CollectedAt)
+        .Take(10)
+        .ToListAsync();
+
+        return Ok(latest);
+    }
+
+    [HttpGet("disk/history")]
+    public async Task<IActionResult> GetDiskHistory([FromQuery] int minutes = 5)
+    {
+        if (minutes <= 0 || minutes > 525600)
+            return BadRequest("minutes must be between 1 and 525600 (1 year)");
+
+        var from = DateTime.UtcNow.AddMinutes(-minutes);
+
+        var metrics = await _db.DiskMetrics
             .Where(m => m.CollectedAt >= from)
             .OrderByDescending(m => m.CollectedAt)
             .ToListAsync();
