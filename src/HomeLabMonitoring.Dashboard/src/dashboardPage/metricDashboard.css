@@ -1,0 +1,341 @@
+/* ── Layout ── */
+.dashboard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 48px 40px;
+  height: 100vh;
+  box-sizing: border-box;
+  gap: 36px;
+  overflow: hidden;
+}
+
+.dashboard-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.dashboard-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  width: 100%;
+}
+
+/* ── Uptime corner ── */
+.uptime-corner {
+  position: absolute;
+  top: 32px;
+  right: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 6px 10px;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.uptime-corner:hover,
+.uptime-corner:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.uptime-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+/* ── Gauges row ── */
+.gauges-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 72px;
+}
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 8px;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.gauge:hover,
+.gauge:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gauge-label {
+  font-size: 13px;
+  color: #e5e7eb;
+  white-space: nowrap;
+}
+
+.gauge-value {
+  font-size: 15px;
+  color: #9ca3af;
+  margin-top: -2px;
+}
+
+/* ── Sections ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-label {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+/* Load section grows to fill remaining space */
+.section-load {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Storage bars ── */
+.storage-bar {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 2px;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.storage-bar:hover,
+.storage-bar:focus-visible {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.storage-bar-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.storage-bar-label {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.storage-bar-stats {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.bar-track {
+  height: 14px;
+  background: #1e2028;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #4ade80;
+  border-radius: 8px;
+  transition: width 0.4s ease;
+}
+
+/* ── Load bars ── */
+.load-bars-row {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 40px;
+  align-items: stretch;
+}
+
+.load-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 8px;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.load-bar:hover,
+.load-bar:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.load-bar-value {
+  font-size: 14px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.load-bar-track {
+  width: 80px;
+  flex: 1;
+  min-height: 80px;
+  background: #1e2028;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.load-bar-fill {
+  width: 100%;
+  background: #4ade80;
+  border-radius: 8px;
+  transition: height 0.4s ease;
+}
+
+.load-bar-label {
+  font-size: 14px;
+  color: #e5e7eb;
+}
+
+/* ── Network totals ── */
+.network-totals {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #2a2d36;
+  padding-top: 24px;
+}
+
+.network-total-item {
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 8px 12px;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.network-total-item:hover,
+.network-total-item:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.network-total-label {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.network-total-value {
+  font-size: 32px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+/* ── History modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.modal {
+  background: #111318;
+  border: 1px solid #374151;
+  border-radius: 16px;
+  padding: 32px;
+  width: 90vw;
+  max-width: 1100px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #e5e7eb;
+  flex: 1;
+}
+
+.time-range-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.time-tab {
+  background: transparent;
+  border: 1px solid #374151;
+  color: #9ca3af;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.time-tab:hover {
+  background: #1e2028;
+  color: #e5e7eb;
+}
+
+.time-tab.active {
+  background: #4ade80;
+  color: #0d0e12;
+  border-color: #4ade80;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.modal-close:hover {
+  color: #e5e7eb;
+}
+
+.modal-body {
+  min-height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-empty {
+  color: #6b7280;
+  font-size: 14px;
+}

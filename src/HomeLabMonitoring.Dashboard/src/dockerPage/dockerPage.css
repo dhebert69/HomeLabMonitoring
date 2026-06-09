@@ -1,0 +1,176 @@
+.docker-page {
+  padding: 60px 48px 40px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.docker-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.docker-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.coming-soon-tag {
+  font-size: 12px;
+  color: #6b7280;
+  background: #1f2028;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+.docker-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.preview-note {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  padding: 12px 16px;
+  background: rgba(74, 222, 128, 0.05);
+  border-left: 2px solid #4ade80;
+  border-radius: 0 8px 8px 0;
+}
+
+/* ── Container table ── */
+.container-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.container-table thead tr {
+  border-bottom: 1px solid #2a2d36;
+}
+
+.container-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.container-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #1f2028;
+  vertical-align: middle;
+}
+
+.container-table tbody tr {
+  transition: background 0.1s;
+}
+
+.container-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.container-name {
+  font-weight: 500;
+  color: #e5e7eb;
+}
+
+.container-image {
+  color: #6b7280;
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+}
+
+.container-uptime,
+.container-ports {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 7px;
+}
+
+.status-dot.running { background: #4ade80; }
+.status-dot.stopped { background: #6b7280; }
+.status-dot.error   { background: #ef4444; }
+
+.status-label {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.container-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  background: #1f2028;
+  border: 1px solid #374151;
+  color: #9ca3af;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transition: background 0.15s;
+}
+
+.action-btn--danger {
+  color: #ef4444;
+}
+
+/* ── Log preview ── */
+.log-preview {
+  background: #0d0e12;
+  border: 1px solid #1f2028;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.log-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #111318;
+  border-bottom: 1px solid #1f2028;
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.log-preview-note {
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.log-preview-body {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  gap: 6px;
+}
+
+.log-line {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.log-time {
+  color: #374151;
+  margin-right: 8px;
+}
