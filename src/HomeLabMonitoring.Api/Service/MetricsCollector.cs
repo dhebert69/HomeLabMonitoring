@@ -1,6 +1,8 @@
 using HomeLabMonitoring.Api.Data;
 using HomeLabMonitoring.Api.Models;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using HomeLabMonitoring.Api.Configuration;
 
 namespace HomeLabMonitoring.Api.Services;
 
@@ -11,11 +13,14 @@ public class MetricsCollector : BackgroundService
     private long _previousNetworkDownload;
     private long _previousNetworkUpload;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly List<MetricsHostConfig> _hosts;
 
-    public MetricsCollector(HttpClient httpClient, IServiceScopeFactory scopeFactory)
+
+    public MetricsCollector(HttpClient httpClient, IServiceScopeFactory scopeFactory, IOptions<List<MetricsHostConfig>> hosts)
     {
         _httpClient = httpClient;
         _scopeFactory = scopeFactory;
+        _hosts = hosts.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,7 +33,7 @@ public class MetricsCollector : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                string rawText = await _httpClient.GetStringAsync("http://192.168.2.233:9101/metrics", stoppingToken);
+                string rawText = await _httpClient.GetStringAsync(_hosts[0].NodeExporterUrl, stoppingToken);
                 PrometheusParser parser = new PrometheusParser();
                 parser.Parse(rawText);
 
@@ -40,7 +45,7 @@ public class MetricsCollector : BackgroundService
 
                 HostMetric hostMetric = new HostMetric
                 {
-                    HostName = "nas",
+                    HostName = _hosts[0].Name,
                     CPU = cpu_percentage,
                     MemoryUsed = memory_used,
                     MemoryTotal = memory_total,
@@ -104,8 +109,8 @@ public class MetricsCollector : BackgroundService
 
     private (long download, long upload, long downloadSpeed, long uploadSpeed) GetNetworkMetrics(PrometheusParser parser)
     {
-        PrometheusMetric? network_download = parser.GetMetric(NodeExporterMetrics.NetworkDownload, new Dictionary<string, string> { { "device", "enp5s0" } });
-        PrometheusMetric? network_upload = parser.GetMetric(NodeExporterMetrics.NetworkUpload, new Dictionary<string, string> { { "device", "enp5s0" } });
+        PrometheusMetric? network_download = parser.GetMetric(NodeExporterMetrics.NetworkDownload, new Dictionary<string, string> { { "device", _hosts[0].NetworkInterface } });
+        PrometheusMetric? network_upload = parser.GetMetric(NodeExporterMetrics.NetworkUpload, new Dictionary<string, string> { { "device", _hosts[0].NetworkInterface } });
         if (network_download != null && network_upload != null)
         {
             long downloadSpeed, uploadSpeed;
@@ -160,7 +165,7 @@ public class MetricsCollector : BackgroundService
             return new DiskMetric
             {
                 MountPoint = disk.Labels["mountpoint"],
-                Hostname = "nas",
+                Hostname = _hosts[0].Name,
                 DiskTotal = (long)disk.Value,
                 DiskAvailable = (long)(freeSpace?.Value ?? 0),
                 CollectedAt = DateTime.UtcNow

@@ -1,6 +1,8 @@
 using HomeLabMonitoring.Api.Data;
 using HomeLabMonitoring.Api.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using HomeLabMonitoring.Api.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,9 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+
+builder.Services.Configure<List<MetricsHostConfig>>(
+    builder.Configuration.GetSection("MetricsCollection:Hosts"));
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
