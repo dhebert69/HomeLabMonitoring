@@ -38,4 +38,9 @@ public class PrometheusParser{
     public PrometheusMetric? GetMetric(string name, Dictionary<string, string>? labels){
         return PrometheusMetrics.FirstOrDefault(metric => metric.Name == name && (labels == null || labels.All(filter => metric.Labels.ContainsKey(filter.Key) && metric.Labels[filter.Key] == filter.Value)));
     }
+
+    public List<PrometheusMetric> GetMetrics(string name)
+    {
+        return PrometheusMetrics.Where(metric => metric.Name == name).ToList();
+    }
 }

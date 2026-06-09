@@ -7,6 +7,7 @@ public class MetricsCollector : BackgroundService
 {
     private readonly HttpClient _httpClient;
     private readonly AppDbContext _db;
+    private List<PrometheusMetric> _previousCpuMetrics = new();
 
     public MetricsCollector(HttpClient httpClient, AppDbContext db)
     {
@@ -23,7 +24,44 @@ public class MetricsCollector : BackgroundService
             PrometheusParser parser  = new PrometheusParser();
             parser.Parse(rawText);
 
-            await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+            double cpu_percentage = CalculateCpuPercentage(parser);
+            (long memory_used, long memory_total) = GetMemoryUsed(parser);
+
+            //
+
+                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
+    }
+
+    private double CalculateCpuPercentage(PrometheusParser parser)
+    {
+        double cpu_percentage = 0;
+        List<PrometheusMetric> CPUs = parser.GetMetrics(NodeExporterMetrics.CpuSecondsTotal);
+        if (!_previousCpuMetrics.Any())
+        {
+            _previousCpuMetrics = new List<PrometheusMetric>(CPUs);
+            return 0;
+        }
+        else
+        {
+            double totalDelta = CPUs.Sum(metric => metric.Value) - _previousCpuMetrics.Sum(metric => metric.Value);
+            double idleDelta = CPUs.Where(metric => metric.Labels["mode"] == "idle").Sum(metric => metric.Value) - _previousCpuMetrics.Where(metric => metric.Labels["mode"] == "idle").Sum(metric => metric.Value);
+            cpu_percentage = (1 - idleDelta / totalDelta) * 100;
+            _previousCpuMetrics = new List<PrometheusMetric>(CPUs);
+        }
+        return cpu_percentage;
+    }
+
+    private (long used, long total) GetMemoryUsed(PrometheusParser parser)
+    {
+        PrometheusMetric? total_mem = parser.GetMetric(NodeExporterMetrics.MemTotal, null);
+        PrometheusMetric? mem_available = parser.GetMetric(NodeExporterMetrics.MemAvailable, null);
+        if (total_mem != null && mem_available != null)
+        {
+            long used = (long)(total_mem.Value - mem_available.Value);
+            long total = (long)total_mem.Value;
+            return (used, total);
+        }
+        return (0, 0);
     }
 }
