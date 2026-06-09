@@ -64,6 +64,8 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       - name: Deploy to NAS
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ${{ secrets.NAS_USER }}@${{ secrets.NAS_TAILSCALE_IP }} "cd ~/projects/monitoringApp/homelabapi && docker compose pull && docker compose up -d"
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.NAS_TAILSCALE_IP }}
